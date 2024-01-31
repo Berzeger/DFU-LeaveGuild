@@ -7,7 +7,7 @@
     "GUID": "3f677433-1702-40fa-97a9-51bee0f18fd9",
     "Files": [
         "Assets/Game/Mods/LeaveGuild/LeaveGuild.dfmod.json",
-        "Assets/Game/Mods/LeaveGuild/LeaveGuild.cs",
-        "Assets/Game/Mods/LeaveGuild/GuildServicePopupWindow.cs"
+        "Assets/Game/Mods/LeaveGuild/Scripts/LeaveGuild.cs",
+        "Assets/Game/Mods/LeaveGuild/Scripts/GuildServicePopupWindow.cs"
     ]
 }
