@@ -24,6 +24,8 @@ using DaggerfallWorkshop.Game.Utility;
 using DaggerfallWorkshop;
 using DaggerfallWorkshop.Game;
 using DaggerfallWorkshop.Game.UserInterfaceWindows;
+using DaggerfallWorkshop.Game.Utility.ModSupport;
+using static Berzeger.LeaveGuildSaveData;
 
 namespace Berzeger
 {
@@ -544,6 +546,15 @@ namespace Berzeger
             sender.CloseWindow();
             if (messageBoxButton == DaggerfallMessageBox.MessageBoxButtons.Yes)
             {
+                // save current membership data (rank etc.)
+                var membershipData = guild.GetGuildData();
+                ModManager.Instance.SendModMessage("Leave Guild", "SaveData", new SavedGuildData
+                {
+                    BuildingFactionId = buildingFactionId,
+                    GuildGroup = guildGroup,
+                    MembershipData = membershipData
+                });
+
                 guildManager.RemoveMembership(guild);
 
                 DaggerfallMessageBox messageBox = new DaggerfallMessageBox(uiManager, uiManager.TopWindow);
@@ -589,7 +600,28 @@ namespace Berzeger
             sender.CloseWindow();
             if (messageBoxButton == DaggerfallMessageBox.MessageBoxButtons.Yes)
             {
+                SavedGuildData savedGuildData = null;
+
+                var modMessagePayload = new SavedGuildData
+                {
+                    BuildingFactionId = buildingFactionId,
+                    GuildGroup = guildGroup
+                };
+                ModManager.Instance.SendModMessage("Leave Guild", "LoadData", modMessagePayload, (string message, object data) =>
+                {
+                    savedGuildData = (SavedGuildData)data;
+                });
+
                 guildManager.AddMembership(guildGroup, guild);
+
+                // restore rank and other data
+                if (savedGuildData != null)
+                {
+                    if (savedGuildData.MembershipData.rank != guild.Rank)
+                    {
+                        guild.RestoreGuildData(savedGuildData.MembershipData);
+                    }
+                }
 
                 DaggerfallMessageBox messageBox = new DaggerfallMessageBox(uiManager, uiManager.TopWindow);
                 messageBox.SetTextTokens(guild.TokensWelcome(), guild);
