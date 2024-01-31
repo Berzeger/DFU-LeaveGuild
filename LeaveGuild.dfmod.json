@@ -1,0 +1,13 @@
+{
+    "ModTitle": "Leave Guild",
+    "ModVersion": "1.0.1",
+    "ModAuthor": "Berzeger",
+    "DFUnity_Version": "1.0.0",
+    "ModDescription": "A simple mod that lets you leave guilds. Simply talk to a guild member and you'll find the new option there.",
+    "GUID": "3f677433-1702-40fa-97a9-51bee0f18fd9",
+    "Files": [
+        "Assets/Game/Mods/LeaveGuild/LeaveGuild.dfmod.json",
+        "Assets/Game/Mods/LeaveGuild/LeaveGuild.cs",
+        "Assets/Game/Mods/LeaveGuild/GuildServicePopupWindow.cs"
+    ]
+}
