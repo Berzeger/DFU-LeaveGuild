@@ -546,6 +546,9 @@ namespace Berzeger
             sender.CloseWindow();
             if (messageBoxButton == DaggerfallMessageBox.MessageBoxButtons.Yes)
             {
+                // lose reputation for leaving (default value: 0)
+                playerEntity.FactionData.ChangeReputation(guild.GetFactionId(), -LeaveGuild.ReputationLossForLeaving, true);
+
                 // save current membership data (rank etc.)
                 var membershipData = guild.GetGuildData();
                 ModManager.Instance.SendModMessage("Leave Guild", "SaveData", new SavedGuildData
@@ -556,10 +559,30 @@ namespace Berzeger
                 });
 
                 guildManager.RemoveMembership(guild);
+                int newReputation = guild.GetReputation(playerEntity);
+
+                // Generate the farewell text
+                TextFile.Token[] leaveTokens;
+                if (newReputation >= 0)
+                {
+                    string leaveTextPositive = string.Format("We hope to have you back should you change your mind, {0}!", playerEntity.Name);
+
+                    leaveTokens = DaggerfallUnity.Instance.TextProvider.CreateTokens(
+                        TextFile.Formatting.JustifyCenter,
+                        leaveTextPositive);
+                }
+                else
+                {
+                    string leaveTextNegative1 = "Your current reputation does not align with our goals, and therefore, you are no longer welcome here.";
+                    string leaveTextNegative2 = string.Format("The situation may change over time; we'll see. Farewell for now, {0}.", playerEntity.Name);
+
+                    leaveTokens = DaggerfallUnity.Instance.TextProvider.CreateTokens(
+                        TextFile.Formatting.JustifyCenter,
+                        leaveTextNegative1,
+                        leaveTextNegative2);
+                }
 
                 DaggerfallMessageBox messageBox = new DaggerfallMessageBox(uiManager, uiManager.TopWindow);
-                // todo: message according to reputation :)
-                TextFile.Token[] leaveTokens = DaggerfallUnity.Instance.TextProvider.CreateTokens(TextFile.Formatting.JustifyCenter, "We hope to have you back should you change your mind!");
                 messageBox.SetTextTokens(leaveTokens, guild);
                 messageBox.ClickAnywhereToClose = true;
                 messageBox.Show();

@@ -13,6 +13,7 @@ namespace Berzeger
     public class LeaveGuild : MonoBehaviour, IHasModSaveData
     {
         private static Mod _mod;
+        public static int ReputationLossForLeaving;
         public LeaveGuildSaveData SavedData { get; private set; }
 
         Type IHasModSaveData.SaveDataType => typeof(LeaveGuildSaveData);
@@ -36,6 +37,10 @@ namespace Berzeger
             {
                 HandleMessage(message, data, callback);
             };
+
+            var settings = _mod.GetSettings();
+            var reputationLossAsString = settings.GetString("ReputationLossForLeaving", "ReputationLoss");
+            int.TryParse(reputationLossAsString, out ReputationLossForLeaving);
 
             _mod.IsReady = true;
         }
