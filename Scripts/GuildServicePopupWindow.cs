@@ -136,7 +136,10 @@ namespace Berzeger
             }
 
             // Leave Guild button
-            if (member)
+            // The game generally considers the player a member of a guild if they're a member of any guild belonging to the faction.
+            // We need to query specifically the one single faction.
+            bool isSpecificMember = guild.IsMember();
+            if (isSpecificMember)
             {
                 leaveButton = DaggerfallUI.AddButton(leaveButtonRect, mainPanel);
                 leaveButton.OnMouseClick += LeaveButton_OnMouseClick;
@@ -519,7 +522,6 @@ namespace Berzeger
         {
             DaggerfallUI.Instance.PlayOneShot(SoundClips.ButtonClick);
             CloseWindow();
-            guild = guildManager.GetGuild(guildGroup, buildingFactionId);
             if (guild == null)
             {
                 DaggerfallUI.MessageBox("Leaving guild " + guildGroup + " not implemented.");
