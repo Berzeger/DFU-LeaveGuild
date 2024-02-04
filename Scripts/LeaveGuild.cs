@@ -1,3 +1,10 @@
+// Project:         Daggerfall Unity Leave Guild Mod
+// Copyright:       Copyright (C) 2024 Filip 'Berzeger' Vondrasek
+// Web Site:        https://www.nexusmods.com/daggerfallunity/mods/588
+// License:         MIT License (http://www.opensource.org/licenses/mit-license.php)
+// Source Code:     https://github.com/Berzeger/DFU-LeaveGuild
+// Original Author: Berzeger
+
 using DaggerfallWorkshop.Game.Utility.ModSupport;
 using DaggerfallWorkshop.Game;
 using UnityEngine;
@@ -31,7 +38,7 @@ namespace Berzeger
             _mod.SaveDataInterface = this;
             //var settings = _mod.GetSettings();
             // ---
-            UIWindowFactory.RegisterCustomUIWindow(UIWindowType.GuildServicePopup, typeof(GuildServicePopupWindow));
+            UIWindowFactory.RegisterCustomUIWindow(UIWindowType.GuildServicePopup, typeof(LeaveGuildServicePopupWindow));
 
             _mod.MessageReceiver = (string message, object data, DFModMessageCallback callback) =>
             {
