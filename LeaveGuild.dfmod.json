@@ -8,7 +8,7 @@
     "Files": [
         "Assets/Game/Mods/LeaveGuild/LeaveGuild.dfmod.json",
         "Assets/Game/Mods/LeaveGuild/Scripts/LeaveGuild.cs",
-        "Assets/Game/Mods/LeaveGuild/Scripts/GuildServicePopupWindow.cs",
+        "Assets/Game/Mods/LeaveGuild/Scripts/LeaveGuildServicePopupWindow.cs",
         "Assets/Game/Mods/LeaveGuild/Scripts/LeaveGuildSaveData.cs",
         "Assets/Game/Mods/LeaveGuild/modsettings.json"
     ]
