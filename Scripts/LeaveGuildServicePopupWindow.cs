@@ -13,6 +13,8 @@ using DaggerfallWorkshop.Game;
 using DaggerfallWorkshop.Game.UserInterfaceWindows;
 using DaggerfallWorkshop.Game.Utility.ModSupport;
 using static Berzeger.LeaveGuildSaveData;
+using System;
+using System.Reflection;
 
 namespace Berzeger
 {
@@ -28,6 +30,8 @@ namespace Berzeger
 
         protected override void Setup()
         {
+            ResolveQuestOfferLocationsModCompatibility();
+
             // Leave Guild button
             // The game generally considers the player a member of a guild if they're a member of any guild belonging to the faction.
             // We need to query specifically the one single faction.
@@ -154,5 +158,59 @@ namespace Berzeger
                 messageBox.Show();
             }
         }
+
+        #region Quest Offer Locations mod compatibility
+        private object _questOfferLocationsWindow;
+        private MethodInfo __OfferQuest_method;
+        private MethodInfo __QuestPicker_OnItemPicked_method;
+        private MethodInfo __GetQuest_method;
+
+        private void ResolveQuestOfferLocationsModCompatibility()
+        {
+            if (LeaveGuild.QuestOfferLocationsType != null)
+            {
+                _questOfferLocationsWindow = Activator.CreateInstance(LeaveGuild.QuestOfferLocationsType, new object[] { uiManager, serviceNPC, guildGroup, buildingFactionId });
+                __OfferQuest_method = LeaveGuild.QuestOfferLocationsType.GetMethod("OfferQuest", BindingFlags.Instance | BindingFlags.NonPublic);
+                __QuestPicker_OnItemPicked_method = LeaveGuild.QuestOfferLocationsType.GetMethod("QuestPicker_OnItemPicked", BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(int), typeof(string) }, null);
+                __GetQuest_method = LeaveGuild.QuestOfferLocationsType.GetMethod("GetQuest", BindingFlags.Instance | BindingFlags.NonPublic);
+            }
+        }
+
+        protected override void OfferQuest()
+        {
+            if (__OfferQuest_method != null)
+            {
+                __OfferQuest_method.Invoke(_questOfferLocationsWindow, null);
+            }
+            else
+            {
+                base.OfferQuest();
+            }
+        }
+
+        protected override void QuestPicker_OnItemPicked(int index, string name)
+        {
+            if (__QuestPicker_OnItemPicked_method != null)
+            {
+                __QuestPicker_OnItemPicked_method.Invoke(_questOfferLocationsWindow, new object[] { index, name });
+            }
+            else
+            {
+                base.QuestPicker_OnItemPicked(index, name);
+            }
+        }
+
+        protected override void GetQuest()
+        {
+            if (__GetQuest_method != null)
+            {
+                __GetQuest_method.Invoke(_questOfferLocationsWindow, null);
+            }
+            else
+            {
+                base.GetQuest();
+            }
+        }
+        #endregion
     }
 }

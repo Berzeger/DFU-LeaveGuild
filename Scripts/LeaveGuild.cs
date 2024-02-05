@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using static Berzeger.LeaveGuildSaveData;
 using static DaggerfallConnect.Arena2.FactionFile;
 using DaggerfallWorkshop.Game.Serialization;
+using System.Reflection;
 
 namespace Berzeger
 {
@@ -21,6 +22,8 @@ namespace Berzeger
     {
         private static Mod _mod;
         public static int ReputationLossForLeaving;
+        public static Type QuestOfferLocationsType;
+
         public LeaveGuildSaveData SavedData { get; private set; }
 
         Type IHasModSaveData.SaveDataType => typeof(LeaveGuildSaveData);
@@ -38,7 +41,6 @@ namespace Berzeger
             _mod.SaveDataInterface = this;
             //var settings = _mod.GetSettings();
             // ---
-            UIWindowFactory.RegisterCustomUIWindow(UIWindowType.GuildServicePopup, typeof(LeaveGuildServicePopupWindow));
 
             _mod.MessageReceiver = (string message, object data, DFModMessageCallback callback) =>
             {
@@ -50,6 +52,38 @@ namespace Berzeger
             int.TryParse(reputationLossAsString, out ReputationLossForLeaving);
 
             _mod.IsReady = true;
+        }
+
+        void Start()
+        {
+            UIWindowFactory.RegisterCustomUIWindow(UIWindowType.GuildServicePopup, typeof(LeaveGuildServicePopupWindow));
+            ResolveQuestOfferLocationsModPresence();
+
+        }
+
+        private void ResolveQuestOfferLocationsModPresence()
+        {
+            Mod questOfferLocationsMod = ModManager.Instance.GetMod("Quest Offer Locations");
+
+            if (questOfferLocationsMod == null)
+            {
+                return;
+            }
+
+            var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+            foreach (var assembly in loadedAssemblies)
+            {
+                foreach (Type type in assembly.GetTypes())
+                {
+                    // The Quest Offer Locations assembly is not precompiled - it will be hiding amongst one of the dynamic assemblies.
+                    // We need to iterate through all the assemblies and find the popup window in it.
+                    if (type.FullName.Contains("DaggerfallWorkshop.Game.UserInterfaceWindows.QuestOfferLocationGuildServicePopUpWindow"))
+                    {
+                        QuestOfferLocationsType = type;
+                        return;
+                    }
+                }
+            }
         }
 
         void HandleMessage(string message, object data, DFModMessageCallback callback)
