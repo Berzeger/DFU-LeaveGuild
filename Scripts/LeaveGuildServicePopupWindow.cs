@@ -37,8 +37,7 @@ namespace Berzeger
         {
             ResolveQuestOfferLocationsModCompatibility();
 
-            TextureReplacement.TryImportTexture(baseTextureName, true, out Texture2D tex);
-            baseTexture = tex;
+            TextureReplacement.TryImportTexture(baseTextureName, true, out baseTexture);
 
             // Create interface panel
             mainPanel.HorizontalAlignment = HorizontalAlignment.Center;

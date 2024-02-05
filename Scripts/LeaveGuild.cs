@@ -39,9 +39,6 @@ namespace Berzeger
         void Awake()
         {
             _mod.SaveDataInterface = this;
-            //var settings = _mod.GetSettings();
-            // ---
-
             _mod.MessageReceiver = (string message, object data, DFModMessageCallback callback) =>
             {
                 HandleMessage(message, data, callback);
