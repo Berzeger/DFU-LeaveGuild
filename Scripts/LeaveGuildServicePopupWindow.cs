@@ -15,13 +15,18 @@ using DaggerfallWorkshop.Game.Utility.ModSupport;
 using static Berzeger.LeaveGuildSaveData;
 using System;
 using System.Reflection;
+using DaggerfallWorkshop.Utility.AssetInjection;
+using DaggerfallWorkshop.Game.Guilds;
 
 namespace Berzeger
 {
     public class LeaveGuildServicePopupWindow : DaggerfallGuildServicePopupWindow
     {
         protected Button leaveButton = new Button();
-        protected Rect leaveButtonRect = new Rect(5, 33, 35, 15);
+        protected Rect leaveButtonRect = new Rect(5f, 33f, 120f, 7f);
+        protected new Rect talkButtonRect = new Rect(5f, 15f, 120f, 7f);
+        protected new Rect exitButtonRect = new Rect(44f, 42f, 43f, 15f);
+        private new const string baseTextureName = "BLANKMENU_4";
 
         public LeaveGuildServicePopupWindow(IUserInterfaceManager uiManager, StaticNPC npc, FactionFile.GuildGroups guildGroup, int buildingFactionId)
             : base(uiManager, npc, guildGroup, buildingFactionId)
@@ -32,22 +37,79 @@ namespace Berzeger
         {
             ResolveQuestOfferLocationsModCompatibility();
 
-            // Leave Guild button
+            TextureReplacement.TryImportTexture(baseTextureName, true, out Texture2D tex);
+            baseTexture = tex;
+
+            // Create interface panel
+            mainPanel.HorizontalAlignment = HorizontalAlignment.Center;
+            mainPanel.VerticalAlignment = VerticalAlignment.Middle;
+            mainPanel.BackgroundTexture = baseTexture;
+            mainPanel.Position = new Vector2(0, 50);
+            mainPanel.Size = new Vector2(130, 60);
+
+            // Is a member of the guild group (i.e. a temple, a knight order etc.)
+            bool isGeneralMember = guildManager.GetGuild(guildGroup).IsMember();
+
             // The game generally considers the player a member of a guild if they're a member of any guild belonging to the faction.
             // We need to query specifically the one single faction.
             bool isSpecificMember = guild.IsMember();
-            if (isSpecificMember)
-            {
-                leaveButton = DaggerfallUI.AddButton(leaveButtonRect, mainPanel);
-                leaveButton.OnMouseClick += LeaveButton_OnMouseClick;
-                leaveButton.Label.Text = "LEAVE GUILD";
-                leaveButton.Label.TextColor = DaggerfallUI.DaggerfallDefaultTextColor;
 
-                // we can also reuse the join hotkey - these two buttons are never shown together
-                leaveButton.Hotkey = DaggerfallShortcut.GetBinding(DaggerfallShortcut.Buttons.GuildsJoin);
+            // Join Guild button
+            joinButton = DaggerfallUI.AddButton(joinButtonRect, mainPanel);
+            joinButton.Hotkey = DaggerfallShortcut.GetBinding(DaggerfallShortcut.Buttons.GuildsJoin);
+            joinButton.Label.Text = "JOIN GUILD";
+            joinButton.Label.TextColor = !isGeneralMember ? DaggerfallUI.DaggerfallDefaultTextColor : DaggerfallUI.DaggerfallDisabledTextColor;
+            joinButton.Label.HorizontalAlignment = HorizontalAlignment.Center;
+            joinButton.Label.Position = new Vector2(0, 1);
+            joinButton.Label.ShadowPosition = Vector2.zero;
+            if (!isGeneralMember)
+            {
+                joinButton.OnMouseClick += JoinButton_OnMouseClick;
             }
 
-            base.Setup();
+            // Leave Guild button
+            leaveButton = DaggerfallUI.AddButton(leaveButtonRect, mainPanel);
+            leaveButton.Label.Text = "LEAVE GUILD";
+            leaveButton.Label.TextColor = isSpecificMember? DaggerfallUI.DaggerfallDefaultTextColor : DaggerfallUI.DaggerfallDisabledTextColor;
+            leaveButton.Label.HorizontalAlignment = HorizontalAlignment.Center;
+            leaveButton.Label.Position = new Vector2(0, 1);
+            leaveButton.Label.ShadowPosition = Vector2.zero;
+            leaveButton.Hotkey = DaggerfallShortcut.GetBinding(DaggerfallShortcut.Buttons.GuildsJoin);
+            // Assign the handler only if the button is enabled
+            if (isSpecificMember)
+            {
+                leaveButton.OnMouseClick += LeaveButton_OnMouseClick;
+            }
+
+            // Talk button
+            talkButton = DaggerfallUI.AddButton(talkButtonRect, mainPanel);
+            talkButton.OnMouseClick += TalkButton_OnMouseClick;
+            talkButton.Hotkey = DaggerfallShortcut.GetBinding(DaggerfallShortcut.Buttons.GuildsTalk);
+            talkButton.OnKeyboardEvent += TalkButton_OnKeyboardEvent;
+            talkButton.Label.TextColor = DaggerfallUI.DaggerfallDefaultTextColor;
+            talkButton.Label.Text = "TALK";
+            talkButton.Label.HorizontalAlignment = HorizontalAlignment.Center;
+            talkButton.Label.Position = new Vector2(0, 1);
+            talkButton.Label.ShadowPosition = Vector2.zero;
+
+            // Service button
+            serviceLabel.Position = new Vector2(0, 1);
+            serviceLabel.ShadowPosition = Vector2.zero;
+            serviceLabel.HorizontalAlignment = HorizontalAlignment.Center;
+            serviceLabel.Text = Services.GetServiceLabelText(service).ToUpper();
+            serviceButton = DaggerfallUI.AddButton(serviceButtonRect, mainPanel);
+            serviceButton.Components.Add(serviceLabel);
+            serviceButton.OnMouseClick += ServiceButton_OnMouseClick;
+            serviceButton.Hotkey = DaggerfallShortcut.GetBinding(Services.GetServiceShortcutButton(service));
+            serviceButton.OnKeyboardEvent += ServiceButton_OnKeyboardEvent;
+
+            // Exit button
+            exitButton = DaggerfallUI.AddButton(exitButtonRect, mainPanel);
+            exitButton.OnMouseClick += ExitButton_OnMouseClick;
+            exitButton.Hotkey = DaggerfallShortcut.GetBinding(DaggerfallShortcut.Buttons.GuildsExit);
+            exitButton.OnKeyboardEvent += ExitButton_OnKeyboardEvent;
+
+            NativePanel.Components.Add(mainPanel);
         }
 
         protected virtual void LeaveButton_OnMouseClick(BaseScreenComponent sender, Vector2 position)
